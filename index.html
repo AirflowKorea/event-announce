@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Airflow KRUG 행사 스태프 안내 가이드</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 상단 헤더 -->
+  <header class="header">
+    <div class="header-top">
+      <span class="header-badge">Airflow KRUG</span>
+      <span style="font-size: 0.8rem; opacity: 0.85;">행사일: 2026.11.16</span>
+    </div>
+    <h1 class="header-title">스태프 업무 분장 & 공통 안내</h1>
+    <p class="header-subtitle">성공적인 밋업 진행을 위한 현장 안내 가이드입니다.</p>
+  </header>
+
+  <main class="container">
+
+    <!-- 긴급 공지 배너 -->
+    <div class="alert-box">
+      📢 <strong>스태프 집결 안내:</strong> 행사 시작 전 <strong>오후 6시 15분</strong>까지 메인 홀 앞 리셉션 데스크로 모여주시기 바랍니다.
+    </div>
+
+    <!-- 파트별 바로가기 -->
+    <section class="section">
+      <h2 class="section-title">📌 파트별 상세 안내 바로가기</h2>
+      <div class="role-nav-grid">
+        <a href="roles/photo.html" class="role-btn">
+          <span class="icon">📸</span>
+          <span class="title">사진 보조</span>
+          <span class="staff">강민석, 김혜진</span>
+        </a>
+        <a href="roles/reception.html" class="role-btn">
+          <span class="icon">🎟️</span>
+          <span class="title">리셉션 보조</span>
+          <span class="staff">김도율, 조우형</span>
+        </a>
+        <a href="roles/stage.html" class="role-btn">
+          <span class="icon">🎤</span>
+          <span class="title">발표/사회 보조</span>
+          <span class="staff">김광현, 정수진</span>
+        </a>
+        <a href="roles/floor.html" class="role-btn">
+          <span class="icon">🚶</span>
+          <span class="title">현장 보조</span>
+          <span class="staff">김지훈, 정소미</span>
+        </a>
+        <a href="roles/media.html" class="role-btn">
+          <span class="icon">🎬</span>
+          <span class="title">미디어</span>
+          <span class="staff">신지호</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 전체 담당자 배정표 -->
+    <section class="section">
+      <h2 class="section-title">👥 전체 스태프 배정표</h2>
+      <div style="margin-bottom: 8px;">
+        <input type="text" id="staffSearch" placeholder="🔍 이름 또는 담당 업무 검색..." 
+               style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem;">
+      </div>
+      <div class="table-container">
+        <table id="staffTable">
+          <thead>
+            <tr>
+              <th>이름</th>
+              <th>담당 파트</th>
+              <th>상세 가이드</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>강민석</strong></td>
+              <td><span class="badge badge-photo">사진 보조</span></td>
+              <td><a href="roles/photo.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+            <tr>
+              <td><strong>김혜진</strong></td>
+              <td><span class="badge badge-photo">사진 보조</span></td>
+              <td><a href="roles/photo.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+            <tr>
+              <td><strong>김도율</strong></td>
+              <td><span class="badge badge-reception">리셉션 보조</span></td>
+              <td><a href="roles/reception.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+            <tr>
+              <td><strong>조우형</strong></td>
+              <td><span class="badge badge-reception">리셉션 보조</span></td>
+              <td><a href="roles/reception.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+            <tr>
+              <td><strong>김광현</strong></td>
+              <td><span class="badge badge-stage">발표자/사회 보조</span></td>
+              <td><a href="roles/stage.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+            <tr>
+              <td><strong>정수진</strong></td>
+              <td><span class="badge badge-stage">발표자/사회 보조</span></td>
+              <td><a href="roles/stage.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+            <tr>
+              <td><strong>김지훈</strong></td>
+              <td><span class="badge badge-floor">현장 보조</span></td>
+              <td><a href="roles/floor.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+            <tr>
+              <td><strong>정소미</strong></td>
+              <td><span class="badge badge-floor">현장 보조</span></td>
+              <td><a href="roles/floor.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+            <tr>
+              <td><strong>신지호</strong></td>
+              <td><span class="badge badge-media">미디어</span></td>
+              <td><a href="roles/media.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">안내 보기 →</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 공통 공지 사항 -->
+    <section class="section">
+      <h2 class="section-title">🏢 공통 시설 & 이동 동선 안내</h2>
+      
+      <div class="card">
+        <h3 class="card-title">🚶 행사장 이동 동선</h3>
+        <p style="font-size: 0.92rem; color: #374151; margin-bottom: 8px;">
+          • <strong>엘리베이터:</strong> 건물 로비 중앙 엘리베이터 탑승 후 행사장(메인 홀) 층 하차<br>
+          • <strong>입구 & 리셉션:</strong> 엘리베이터 하차 후 우측 복도로 진입하시면 바로 리셉션 데스크가 있습니다.<br>
+          • <strong>스태프 짐 보관:</strong> 세미나룸 뒤편 스태프 전용 락커/테이블에 보관 (귀중품은 개인 소지)
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">🚻 화장실 & 편의시설 위치</h3>
+        <p style="font-size: 0.92rem; color: #374151;">
+          • <strong>화장실:</strong> 리셉션 데스크 맞은편 복도 끝 위치 (남/여 구분)<br>
+          • <strong>정수기 & 음료대:</strong> 행사장 뒤편 케이터링 바 테이블<br>
+          • <strong>흡연실:</strong> 건물 1층 외부 지정 구역 이용 (실내 전 구역 금연)
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">⏰ 주요 타임라인</h3>
+        <div class="timeline">
+          <div class="timeline-item">
+            <span class="timeline-time">18:15</span>
+            <span class="timeline-desc"><strong>스태프 사전 브리핑 & 장비 세팅</strong> (역할별 점검)</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-time">18:45</span>
+            <span class="timeline-desc"><strong>참가자 등록 오픈 (리셉션)</strong> & 입장 안내</span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-time">19:00</span>
+            <span class="timeline-desc"><strong>오프닝 및 세션 시작</strong></span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-time">21:00</span>
+            <span class="timeline-desc"><strong>Q&A 및 네트워킹 / 기념촬영</strong></span>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-time">21:30</span>
+            <span class="timeline-desc"><strong>행사 종료 및 행사장 정리정돈</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">🚨 긴급 연락 & 소통 채널</h3>
+        <div class="contact-grid">
+          <div class="contact-item">
+            <span>💬 슬랙 채널</span>
+            <span class="contact-action">#2026-event-staff</span>
+          </div>
+          <div class="contact-item">
+            <span>📞 현장 총괄 (운영진)</span>
+            <a href="tel:010-0000-0000" class="contact-action">전화 연결</a>
+          </div>
+          <div class="contact-item">
+            <span>📶 현장 Wi-Fi</span>
+            <span style="font-weight: 600;">SSID: KRUG_Event / PW: airflow2026</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>© 2026 Apache Airflow Korean User Group (KRUG)</p>
+  </footer>
+
+  <script>
+    // 간단 검색 필터
+    document.getElementById('staffSearch').addEventListener('input', function(e) {
+      const q = e.target.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#staffTable tbody tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
