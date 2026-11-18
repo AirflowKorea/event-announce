@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Airflow & Magpie Meetup - 5F 공간 동선 시뮬레이션</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        /* 커스텀 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- 상단 헤더 & 컨트롤 바 -->
+    <header class="bg-white border-b border-slate-200 px-4 py-3 sm:px-6 sticky top-0 z-20 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <!-- 타이틀 -->
+            <div class="flex items-center gap-3">
+                <a href="index.html"
+                    class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition shrink-0">
+                    ← 메인으로
+                </a>
+                <div
+                    class="w-10 h-10 rounded-xl bg-purple-700 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+                    5F
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                        Airflow & Magpie Meetup 공간 동선 시뮬레이터
+                    </h1>
+                    <p class="text-xs text-slate-500">
+                        오전 통합 세션(5C) → 점심 식사(5B) → 오후 2개 트랙(5C 발표 / 5A 스프린트) 동선 시각화
+                    </p>
+                </div>
+            </div>
+
+            <!-- 재생 컨트롤 & 상태 뱃지 -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <!-- 현재 시각 표시 -->
+                <div class="bg-slate-900 text-white px-3.5 py-1.5 rounded-lg flex items-center gap-2 shadow-inner">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" id="liveIndicator"></span>
+                    <span class="text-xs text-slate-400 font-medium">현재 시각</span>
+                    <span id="clockDisplay"
+                        class="font-mono font-bold text-sm sm:text-base tracking-wider text-emerald-300">10:00</span>
+                </div>
+
+                <!-- 재생 / 일시정지 버튼 -->
+                <button id="playPauseBtn"
+                    class="bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition shadow-sm cursor-pointer">
+                    <svg id="pauseIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <svg id="playIcon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span id="playPauseText">일시정지</span>
+                </button>
+
+                <!-- 배속 버튼 -->
+                <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+                    <button data-speed="1"
+                        class="speed-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-white text-purple-700 shadow-sm cursor-pointer">1x</button>
+                    <button data-speed="2.5"
+                        class="speed-btn px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer">2.5x</button>
+                    <button data-speed="5"
+                        class="speed-btn px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer">5x</button>
+                </div>
+
+                <!-- 리셋 버튼 -->
+                <button id="resetBtn"
+                    class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
+                    처음부터
+                </button>
+            </div>
+        </div>
+
+        <!-- 타임라인 프로그레스 슬라이더 -->
+        <div class="max-w-7xl mx-auto mt-3 pt-2 border-t border-slate-100">
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-mono text-slate-500 font-semibold">10:00</span>
+                <input id="timeSlider" type="range" min="600" max="1110" value="600" step="1"
+                    class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600">
+                <span class="text-xs font-mono text-slate-500 font-semibold">18:30</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 그리드 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- 좌측: 2D 5F 평면도 및 동선 캔버스 (7 cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+            <!-- 현재 세션 요약 배너 -->
+            <div
+                class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span id="phaseBadge"
+                            class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
+                            오전 세션
+                        </span>
+                        <span id="timeRangeBadge" class="text-xs font-mono font-semibold text-slate-500">
+                            10:00 - 10:30
+                        </span>
+                    </div>
+                    <h2 id="currentSessionTitle" class="text-base sm:text-lg font-bold text-slate-900">
+                        체크인 (Check-in)
+                    </h2>
+                    <p id="currentSessionDesc" class="text-xs sm:text-sm text-slate-600 mt-0.5">
+                        엘리베이터/계단(현위치)으로 입장하여 미니 라운지 및 5C 메인 룸으로 분산 대기합니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 캔버스 컨테이너 -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-sm flex flex-col">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">
+                    <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-sm bg-purple-700 inline-block"></span>
+                        5F 평면도 실시간 인원 분포 & 동선
+                    </span>
+
+                    <!-- 범례 (Legend) -->
+                    <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                        <span class="flex items-center gap-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>
+                            일반 발표 참가자 (5C)
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                            스프린트 참가자 (5A)
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                            운영진 / 연사
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 반응형 캔버스 래퍼 -->
+                <div id="canvasContainer"
+                    class="relative w-full aspect-[4/4.3] max-h-[650px] bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
+                    <canvas id="floorCanvas" class="w-full h-full block"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 우측: 인터랙티브 타임테이블 (5 cols) -->
+        <aside class="lg:col-span-5 flex flex-col gap-4">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+                <div class="p-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">행사 타임테이블 (클릭 시 시간 이동)</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">원하는 시간대를 클릭하면 해당 세션의 이동 경로로 즉시 이동합니다.</p>
+                    </div>
+                </div>
+
+                <div id="timetableList" class="p-3 space-y-2 overflow-y-auto max-h-[760px]">
+                    <!-- JS로 타임테이블 항목 렌더링 -->
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        /**
+         * ============================================================================
+         * 1. 행사 일정 및 공간 동선 데이터 정의 (타임테이블 & 5F 안내도 기반)
+         * ============================================================================
+         * - 오전 전체 세션: 5C
+         * - 점심 식사: 5B 및 미니 라운지
+         * - 오후 2개 트랙: 발표 세션은 5C / 스프린트는 5A
+         * - 클로징 통합: 5C
+         */
+        const TOTAL_ATTENDEES = 75; // 총 참가자 수 (일반 46, 스프린트 22, 운영진/연사 7)
+
+        // 시간(분 단위: 10:00 = 600, 18:30 = 1110)
+        const SCHEDULE = [
+            {
+                id: 'checkin',
+                startMin: 600, // 10:00
+                endMin: 630,   // 10:30
+                timeText: '10:00 - 10:30',
+                phase: '오전 입장',
+                title: '체크인 (Check-in)',
+                roomLabel: '현위치 입장 → 미니 라운지 & 5C',
+                speaker: '운영진 안내',
+                desc: '엘리베이터/계단(현위치)으로 입장하여 미니 라운지에서 대기하거나 오전 세션이 열리는 5C 룸으로 입장합니다.',
+                isSplitTrack: false
+            },
+            {
+                id: 'opening',
+                startMin: 630, // 10:30
+                endMin: 650,   // 10:50
+                timeText: '10:30 - 10:50',
+                phase: '오전 통합 (5C)',
+                title: '오프닝: 2026년 활동 돌아보기 & 운영진 소개',
+                roomLabel: '5C (오전 통합 진행)',
+                speaker: '운영진',
+                desc: '오전 프로그램은 5C 룸에서 전부 진행됩니다. 모든 참가자가 5C에 모여 오프닝을 시작합니다.',
+                isSplitTrack: false
+            },
+            {
+                id: 'keynote',
+                startMin: 650, // 10:50
+                endMin: 700,   // 11:40
+                timeText: '10:50 - 11:40',
+                phase: '키노트 (5C)',
+                title: 'Eight Times the Reports: Surviving the AI Vulnerability Flood at Apache Airflow',
+                roomLabel: '5C (오전 통합 진행)',
+                speaker: 'Jarek Potiuk',
+                desc: '8배 늘어난 리포트: Apache Airflow, AI 취약점 홍수에서 살아남기 (전원 5C 수강)',
+                isSplitTrack: false
+            },
+            {
+                id: 'airflow101',
+                startMin: 700, // 11:40
+                endMin: 725,   // 12:05
+                timeText: '11:40 - 12:05',
+                phase: '오전 통합 (5C)',
+                title: 'Apache Airflow 101',
+                roomLabel: '5C (오전 통합 진행)',
+                speaker: '운영진',
+                desc: 'Airflow 핵심 개념 및 입문 세션 (전원 5C에서 수강)',
+                isSplitTrack: false
+            },
+            {
+                id: 'sprint_intro',
+                startMin: 725, // 12:05
+                endMin: 740,   // 12:20
+                timeText: '12:05 - 12:20',
+                phase: '오전 통합 (5C)',
+                title: '스프린트 안내 & 단체사진',
+                roomLabel: '5C (오전 통합 진행)',
+                speaker: 'Jarek Potiuk, 추영욱',
+                desc: '오후 5A에서 진행될 스프린트 안내 및 전체 참가자 5C 단체사진 촬영',
+                isSplitTrack: false
+            },
+            {
+                id: 'lunch',
+                startMin: 740, // 12:20
+                endMin: 800,   // 13:20
+                timeText: '12:20 - 13:20',
+                phase: '점심 식사',
+                title: '점심 식사 (제공) & 자유 네트워킹',
+                roomLabel: '5B (점심 식사) & 미니 라운지',
+                speaker: '식사 및 휴식',
+                desc: '참가자들이 5C에서 나와 5B(점심 식사)와 미니 라운지로 이동해 식사하고, 남/여 화장실을 이용합니다.',
+                isSplitTrack: false
+            },
+            {
+                id: 'pm_session1',
+                startMin: 800, // 13:20
+                endMin: 835,   // 13:55
+                timeText: '13:20 - 13:55',
+                phase: '오후 2트랙 (5C/5A)',
+                title: '[5C 발표] 혼자 개발하는 서비스, Airflow와 함께 살아남기 / [5A 스프린트] 시작',
+                roomLabel: '5C (발표 세션) | 5A (스프린트)',
+                speaker: '이선엽 (5C) / Jarek Potiuk, 추영욱 (5A)',
+                desc: '오후에는 5C와 5A로 나뉘어 진행합니다! 발표 청중은 5C로, 스프린트 참가자는 5A로 이동합니다.',
+                isSplitTrack: true
+            },
+            {
+                id: 'pm_session2',
+                startMin: 835, // 13:55
+                endMin: 870,   // 14:30
+                timeText: '13:55 - 14:30',
+                phase: '오후 2트랙 (5C/5A)',
+                title: '[5C 발표] PyCon TW 원정기 / [5A 스프린트] 진행 중',
+                roomLabel: '5C (발표 세션) | 5A (스프린트)',
+                speaker: '운영진 (5C) / Jarek Potiuk, 추영욱 (5A)',
+                desc: '5C에서는 해외 컨퍼런스 후기 발표가, 5A에서는 Apache Airflow & Magpie 첫 PR 스프린트가 이어집니다.',
+                isSplitTrack: true
+            },
+            {
+                id: 'pm_session3',
+                startMin: 870, // 14:30
+                endMin: 905,   // 15:05
+                timeText: '14:30 - 15:05',
+                phase: '오후 2트랙 (5C/5A)',
+                title: '[5C 발표] 2.x에서 3.x로 이행하면서 알게 된 베스트 프랙티스 / [5A 스프린트]',
+                roomLabel: '5C (발표 세션) | 5A (스프린트)',
+                speaker: '한상곤 (5C) / Jarek Potiuk, 추영욱 (5A)',
+                desc: 'Airflow 3.x 마이그레이션 실전 경험 발표(5C) 및 스프린트 핸즈온(5A) 병행 진행',
+                isSplitTrack: true
+            },
+            {
+                id: 'break',
+                startMin: 905, // 15:05
+                endMin: 920,   // 15:20
+                timeText: '15:05 - 15:20',
+                phase: '휴식',
+                title: '오후 휴식 시간 (Break & 네트워킹)',
+                roomLabel: '미니 라운지 · 5B · 남/여 화장실',
+                speaker: '자유 휴식',
+                desc: '5C와 5A 참가자들이 중앙 복도를 통해 미니 라운지와 남/여 화장실로 이동하여 리프레시합니다.',
+                isSplitTrack: true
+            },
+            {
+                id: 'pm_session4',
+                startMin: 920, // 15:20
+                endMin: 955,   // 15:55
+                timeText: '15:20 - 15:55',
+                phase: '오후 2트랙 (5C/5A)',
+                title: '[5C 발표] Spark 없이 CDC MERGE 하기 / [5A 스프린트] 마무리 단계',
+                roomLabel: '5C (발표 세션) | 5A (스프린트)',
+                speaker: '김태연 (5C) / Jarek Potiuk, 추영욱 (5A)',
+                desc: '휴식 후 다시 5C(발표 세션)와 5A(스프린트)로 복귀하여 오후 후반부 세션을 이어갑니다.',
+                isSplitTrack: true
+            },
+            {
+                id: 'pm_session5',
+                startMin: 955, // 15:55
+                endMin: 990,   // 16:30
+                timeText: '15:55 - 16:30',
+                phase: '오후 2트랙 (5C/5A)',
+                title: '[5C 발표] Airflow에 LLM 붙이기 / [5A 스프린트] PR 정리',
+                roomLabel: '5C (발표 세션) | 5A (스프린트)',
+                speaker: '남상균 (5C) / Jarek Potiuk, 추영욱 (5A)',
+                desc: '상품 카탈로그 보강 파이프라인 사례 발표(5C) 및 스프린트 결과 정리(5A)',
+                isSplitTrack: true
+            },
+            {
+                id: 'closing',
+                startMin: 990,  // 16:30
+                endMin: 1020, // 17:00
+                timeText: '16:30 - 17:00',
+                phase: '클로징 통합 (5C)',
+                title: '라이트닝 토크 & 클로징 (스프린트 결과 공유 포함)',
+                roomLabel: '5C (전체 재집결)',
+                speaker: '운영진 & 스프린트 참가자',
+                desc: '5A에 있던 스프린트 참가자 전원이 5C로 이동하여 합류하고, 라이트닝 토크와 스프린트 성과를 공유합니다.',
+                isSplitTrack: false
+            },
+            {
+                id: 'dinner',
+                startMin: 1020, // 17:00 (17:00~18:00 정리 후 18:00 디너 이동)
+                endMin: 1110, // 18:30
+                timeText: '18:00 - 21:30',
+                phase: '네트워킹 디너',
+                title: '컨퍼런스 디너 (외부 이동)',
+                roomLabel: '5C → 중앙 복도 → 엘리베이터/계단 퇴장',
+                speaker: '연사, 참가자, 운영진 전원',
+                desc: '행사 종료 후 5C에서 나와 중앙 복도를 거쳐 엘리베이터/계단(출입구)을 통해 외부 네트워킹 디너 장소로 이동합니다.',
+                isSplitTrack: false
+            }
+        ];
+
+        /**
+         * ============================================================================
+         * 2. 5F 평면도 좌표계 정의 (정규화 좌표 0.0 ~ 1.0 기준)
+         * ============================================================================
+         */
+        const ZONES = {
+            // 우측 3개 메인 공간
+            room5A: { x: 0.53, y: 0.05, w: 0.42, h: 0.28, label: '5A 스프린트 (Track 2)', sub: '오후 스프린트 핸즈온 룸', color: '#047857', bg: '#ecfdf5' },
+            room5B: { x: 0.53, y: 0.35, w: 0.42, h: 0.27, label: '5B 점심 식사', sub: '식사 및 휴식 (Lunch & Dining)', color: '#6d28d9', bg: '#f3e8ff' },
+            room5C: { x: 0.53, y: 0.64, w: 0.42, h: 0.31, label: '5C 발표 세션 (Track 1)', sub: '오전 전체 진행 · 오후 발표 · 클로징', color: '#4338ca', bg: '#eef2ff' },
+
+            // 좌측 공간들
+            studioUnused: { x: 0.05, y: 0.05, w: 0.38, h: 0.14, label: '스튜디오 1·2 / 창고', sub: '사용 안 함 (출입 제한)', unused: true },
+            womenRestroom: { x: 0.05, y: 0.21, w: 0.15, h: 0.14, label: '여자화장실', sub: '', restroom: true },
+            meetingUnused: { x: 0.21, y: 0.21, w: 0.22, h: 0.13, label: '회의실 / 폰부스', sub: '사용 안 함', unused: true },
+            menRestroom: { x: 0.05, y: 0.38, w: 0.15, h: 0.13, label: '남자화장실', sub: '', restroom: true },
+            stairsCore: { x: 0.21, y: 0.38, w: 0.22, h: 0.24, label: '엘리베이터 / 계단', sub: '출입구 코어', core: true },
+            canteenUnused: { x: 0.05, y: 0.64, w: 0.15, h: 0.11, label: '캔틴', sub: '사용 안 함', unused: true },
+            lounge: { x: 0.05, y: 0.76, w: 0.38, h: 0.19, label: '미니 라운지 (네트워킹)', sub: '자유 네트워킹 및 휴식', color: '#b45309', bg: '#fffbeb' }
+        };
+
+        // 주요 웨이포인트(경로 노드) 좌표 (복도를 통한 자연스러운 이동을 위한 그래프)
+        const WAYPOINTS = {
+            entrance: { x: 0.48, y: 0.61 },        // '현위치' 입구
+            corridorTop: { x: 0.48, y: 0.19 },     // 5A 앞 복도
+            corridorMid: { x: 0.48, y: 0.48 },     // 5B 앞 복도
+            corridorLow: { x: 0.48, y: 0.78 },     // 5C 및 라운지 앞 복도
+            corridorRestJct: { x: 0.48, y: 0.36 }, // 화장실 갈림길 (중앙 복도)
+            hallwayRestWest: { x: 0.19, y: 0.36 }, // 남/여 화장실 앞 서쪽 통로
+            door5A: { x: 0.54, y: 0.19 },          // 5A 출입문
+            door5B: { x: 0.54, y: 0.48 },          // 5B 출입문
+            door5C: { x: 0.54, y: 0.78 },          // 5C 출입문
+            doorLounge: { x: 0.42, y: 0.84 },      // 미니 라운지 입구
+            doorWomen: { x: 0.18, y: 0.28 },       // 여자화장실 입구
+            doorMen: { x: 0.18, y: 0.44 },         // 남자화장실 입구
+            exitElevator: { x: 0.32, y: 0.56 }     // 엘리베이터/계단 탑승구
+        };
+
+        /**
+         * ============================================================================
+         * 3. 참가자(Agent/Dot) 객체 및 경로 탐색 로직
+         * ============================================================================
+         */
+        class Attendee {
+            constructor(id, role) {
+                this.id = id;
+                // role: 'general' (일반 발표-5C), 'sprint' (스프린트-5A), 'staff' (운영진/연사)
+                this.role = role;
+
+                // 색상 지정
+                if (role === 'general') {
+                    this.color = '#2563eb'; // Blue 600
+                    this.radius = 4.2;
+                } else if (role === 'sprint') {
+                    this.color = '#10b981'; // Emerald 500
+                    this.radius = 4.4;
+                } else {
+                    this.color = '#f59e0b'; // Amber 500
+                    this.radius = 4.8;
+                }
+
+                // 초기 위치 (엘리베이터/입구 근처 대기)
+                this.x = WAYPOINTS.exitElevator.x + (Math.random() - 0.5) * 0.04;
+                this.y = WAYPOINTS.exitElevator.y + (Math.random() - 0.5) * 0.04;
+
+                this.targetZone = 'outside';
+                this.finalPos = { x: this.x, y: this.y };
+                this.pathQueue = [];
+
+                // 개인별 이동 속도 편차 및 방 내부 미세 움직임(유기적 배회)
+                this.speed = 0.0034 + Math.random() * 0.0015;
+                this.wanderTimer = Math.random() * 100;
+                this.enteredDelay = (id / TOTAL_ATTENDEES) * 22; // 체크인 시 순차 입장 딜레이(분)
+            }
+
+            // 특정 구역 내부의 무작위 좌석/위치 생성
+            getRandomSpotInZone(zoneKey) {
+                if (zoneKey === 'outside') {
+                    return {
+                        x: WAYPOINTS.exitElevator.x + (Math.random() - 0.5) * 0.06,
+                        y: WAYPOINTS.exitElevator.y + (Math.random() - 0.5) * 0.06
+                    };
+                }
+                if (zoneKey === 'womenRestroom' || zoneKey === 'menRestroom') {
+                    const z = ZONES[zoneKey];
+                    return {
+                        x: z.x + 0.03 + Math.random() * (z.w - 0.06),
+                        y: z.y + 0.035 + Math.random() * (z.h - 0.07)
+                    };
+                }
+
+                const z = ZONES[zoneKey];
+                const padX = 0.035;
+                const padTop = 0.085;
+                const padBottom = 0.035;
+                return {
+                    x: z.x + padX + Math.random() * (z.w - padX * 2),
+                    y: z.y + padTop + Math.random() * (z.h - padTop - padBottom)
+                };
+            }
+
+            // 목표 구역 설정 및 복도 경유 경로(Path Queue) 생성
+            setDestination(newZoneKey, forceInstant = false) {
+                if (this.targetZone === newZoneKey && !forceInstant) return;
+                const prevZone = this.targetZone;
+                this.targetZone = newZoneKey;
+                const dest = this.getRandomSpotInZone(newZoneKey);
+                this.finalPos = dest;
+
+                if (forceInstant) {
+                    this.x = dest.x;
+                    this.y = dest.y;
+                    this.pathQueue = [];
+                    return;
+                }
+
+                // 복도 웨이포인트를 거치는 경로 구성 (벽 통과 방지)
+                const queue = [];
+                const jitter = () => (Math.random() - 0.5) * 0.02;
+
+                // 1. 현재 위치에서 복도로 나오는 경로
+                if (prevZone === 'womenRestroom' || prevZone === 'menRestroom' || (this.x < 0.22 && this.y < 0.52)) {
+                    queue.push({ x: WAYPOINTS.hallwayRestWest.x, y: WAYPOINTS.hallwayRestWest.y + jitter() * 0.5 });
+                    queue.push({ x: WAYPOINTS.corridorRestJct.x + jitter(), y: WAYPOINTS.corridorRestJct.y });
+                } else if (this.x > 0.52) {
+                    if (this.y < 0.34) queue.push({ x: WAYPOINTS.corridorTop.x + jitter(), y: WAYPOINTS.door5A.y + jitter() });
+                    else if (this.y < 0.63) queue.push({ x: WAYPOINTS.corridorMid.x + jitter(), y: WAYPOINTS.door5B.y + jitter() });
+                    else queue.push({ x: WAYPOINTS.corridorLow.x + jitter(), y: WAYPOINTS.door5C.y + jitter() });
+                } else if (this.x < 0.43 && this.y > 0.74) {
+                    queue.push({ x: WAYPOINTS.corridorLow.x + jitter(), y: WAYPOINTS.doorLounge.y + jitter() });
+                }
+
+                // 2. 중앙 복도를 따라 목적지 입구로 이동
+                if (newZoneKey === 'room5A') {
+                    queue.push({ x: WAYPOINTS.corridorTop.x + jitter(), y: WAYPOINTS.corridorTop.y });
+                    queue.push({ x: WAYPOINTS.door5A.x, y: WAYPOINTS.door5A.y + jitter() });
+                } else if (newZoneKey === 'room5B') {
+                    queue.push({ x: WAYPOINTS.corridorMid.x + jitter(), y: WAYPOINTS.corridorMid.y });
+                    queue.push({ x: WAYPOINTS.door5B.x, y: WAYPOINTS.door5B.y + jitter() });
+                } else if (newZoneKey === 'room5C') {
+                    queue.push({ x: WAYPOINTS.corridorLow.x + jitter(), y: WAYPOINTS.corridorLow.y });
+                    queue.push({ x: WAYPOINTS.door5C.x, y: WAYPOINTS.door5C.y + jitter() });
+                } else if (newZoneKey === 'lounge') {
+                    queue.push({ x: WAYPOINTS.corridorLow.x + jitter(), y: WAYPOINTS.corridorLow.y });
+                    queue.push({ x: WAYPOINTS.doorLounge.x, y: WAYPOINTS.doorLounge.y + jitter() });
+                } else if (newZoneKey === 'womenRestroom') {
+                    queue.push({ x: WAYPOINTS.corridorRestJct.x + jitter(), y: WAYPOINTS.corridorRestJct.y });
+                    queue.push({ x: WAYPOINTS.hallwayRestWest.x, y: WAYPOINTS.hallwayRestWest.y });
+                    queue.push({ x: WAYPOINTS.doorWomen.x, y: WAYPOINTS.doorWomen.y });
+                } else if (newZoneKey === 'menRestroom') {
+                    queue.push({ x: WAYPOINTS.corridorRestJct.x + jitter(), y: WAYPOINTS.corridorRestJct.y });
+                    queue.push({ x: WAYPOINTS.hallwayRestWest.x, y: WAYPOINTS.hallwayRestWest.y });
+                    queue.push({ x: WAYPOINTS.doorMen.x, y: WAYPOINTS.doorMen.y });
+                } else if (newZoneKey === 'outside') {
+                    queue.push({ x: WAYPOINTS.entrance.x + jitter(), y: WAYPOINTS.entrance.y });
+                    queue.push({ x: WAYPOINTS.exitElevator.x, y: WAYPOINTS.exitElevator.y });
+                }
+
+                // 3. 최종 방 내부 좌표
+                queue.push(dest);
+                this.pathQueue = queue;
+            }
+
+            // 프레임별 위치 업데이트
+            update(dt, speedMultiplier) {
+                const stepSpeed = this.speed * Math.min(speedMultiplier, 4) * (dt / 16.67);
+
+                if (this.pathQueue.length > 0) {
+                    const nextPt = this.pathQueue[0];
+                    const dx = nextPt.x - this.x;
+                    const dy = nextPt.y - this.y;
+                    const dist = Math.hypot(dx, dy);
+
+                    if (dist < stepSpeed * 1.5) {
+                        this.x = nextPt.x;
+                        this.y = nextPt.y;
+                        this.pathQueue.shift();
+                    } else {
+                        this.x += (dx / dist) * stepSpeed;
+                        this.y += (dy / dist) * stepSpeed;
+                    }
+                } else {
+                    // 목적지 도착 후 자연스러운 미세 움직임
+                    this.wanderTimer += dt * 0.002;
+                    const driftRadius = (this.targetZone === 'lounge' || this.targetZone === 'room5B') ? 0.004 : 0.0015;
+                    this.x = this.finalPos.x + Math.cos(this.wanderTimer + this.id) * driftRadius;
+                    this.y = this.finalPos.y + Math.sin(this.wanderTimer * 0.8 + this.id) * driftRadius;
+                }
+            }
+        }
+
+        /**
+         * ============================================================================
+         * 4. 시뮬레이션 상태 및 타임테이블 동기화 엔진
+         * ============================================================================
+         */
+        const attendees = [];
+        for (let i = 0; i < TOTAL_ATTENDEES; i++) {
+            let role = 'general';
+            if (i < 7) role = 'staff';           // 7명 운영진/연사
+            else if (i < 29) role = 'sprint';    // 22명 스프린트 참가자 (오후 5A)
+            else role = 'general';               // 46명 일반 세션 참가자 (오후 5C)
+            attendees.push(new Attendee(i, role));
+        }
+
+        let currentMinutes = 600; // 10:00 시작
+        let isPlaying = true;
+        let playbackSpeed = 1; // 1x = 1초당 시뮬레이션 2.5분 진행
+        let lastTimestamp = 0;
+        let activeSessionId = null;
+
+        // 현재 분(minutes)에 해당하는 세션 객체 반환
+        function getSessionAt(mins) {
+            for (let i = 0; i < SCHEDULE.length; i++) {
+                if (mins >= SCHEDULE[i].startMin && mins < SCHEDULE[i].endMin) {
+                    return SCHEDULE[i];
+                }
+            }
+            return SCHEDULE[SCHEDULE.length - 1];
+        }
+
+        // 시간대별 각 참가자의 목표 공간 배정 로직
+        function assignDestinationsForTime(mins, forceInstant = false) {
+            const session = getSessionAt(mins);
+
+            attendees.forEach((p, idx) => {
+                // 남/여 화장실 균등 배정 헬퍼 (짝수/홀수로 정확히 50:50 분배)
+                const restroomTarget = (idx % 2 === 0) ? 'womenRestroom' : 'menRestroom';
+
+                // 1. 체크인 (10:00 ~ 10:30): 순차적으로 입장하여 라운지, 5C, 일부 화장실에 분산
+                if (session.id === 'checkin') {
+                    const elapsed = mins - session.startMin;
+                    if (elapsed < p.enteredDelay && !forceInstant) {
+                        p.setDestination('outside', forceInstant);
+                    } else if (idx >= 71) {
+                        // 4명(남2, 여2)은 입장 후 화장실 방문
+                        p.setDestination(restroomTarget, forceInstant);
+                    } else {
+                        // 미니 라운지 네트워킹 및 5C 메인 룸 착석
+                        const dest = (idx % 5 < 2) ? 'lounge' : 'room5C';
+                        p.setDestination(dest, forceInstant);
+                    }
+                }
+                // 2. 오전 통합 세션 (10:30 ~ 12:20): 전원 5C에서 진행
+                else if (['opening', 'keynote', 'airflow101', 'sprint_intro'].includes(session.id)) {
+                    if (p.role === 'staff' && idx === 0) {
+                        p.setDestination('lounge', forceInstant);
+                    } else {
+                        p.setDestination('room5C', forceInstant);
+                    }
+                }
+                // 3. 점심 시간 (12:20 ~ 13:20): 5B(점심 식사), 미니 라운지, 남/여 화장실 골고루 이동
+                else if (session.id === 'lunch') {
+                    if (idx % 7 === 0) {
+                        // idx = 0, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70 (짝수 6명 여자화장실, 홀수 5명 남자화장실)
+                        p.setDestination(restroomTarget, forceInstant);
+                    } else if (idx % 3 === 0) {
+                        p.setDestination('lounge', forceInstant);
+                    } else {
+                        p.setDestination('room5B', forceInstant);
+                    }
+                }
+                // 4. 오후 2개 트랙 세션 (13:20~15:05, 15:20~16:30): 발표는 5C, 스프린트는 5A!
+                else if (['pm_session1', 'pm_session2', 'pm_session3', 'pm_session4', 'pm_session5'].includes(session.id)) {
+                    if (p.role === 'sprint') {
+                        p.setDestination('room5A', forceInstant); // 스프린트 트랙: 5A
+                    } else if (p.role === 'staff') {
+                        // 운영진/연사는 5C(발표)와 5A(스프린트)에 분담 배치
+                        p.setDestination(idx % 2 === 0 ? 'room5C' : 'room5A', forceInstant);
+                    } else {
+                        // 일반 참가자: 대다수는 5C 발표 세션, 일부는 5A 스프린트 합류 또는 라운지
+                        if (idx % 11 === 0) p.setDestination('room5A', forceInstant);
+                        else if (idx % 19 === 0) p.setDestination('lounge', forceInstant);
+                        else p.setDestination('room5C', forceInstant); // 발표 트랙: 5C
+                    }
+                }
+                // 5. 오후 휴식 시간 (15:05 ~ 15:20): 미니 라운지, 5B 및 남/여 화장실 골고루 이동
+                else if (session.id === 'break') {
+                    if (idx % 5 === 0) {
+                        // idx = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70 (짝수 8명 여자화장실, 홀수 7명 남자화장실)
+                        p.setDestination(restroomTarget, forceInstant);
+                    } else if (p.role === 'sprint' && idx % 2 === 0) {
+                        // 스프린트 참가자 일부는 5A 잔류
+                        p.setDestination('room5A', forceInstant);
+                    } else if (idx % 3 === 0) {
+                        p.setDestination('room5B', forceInstant);
+                    } else {
+                        p.setDestination('lounge', forceInstant);
+                    }
+                }
+                // 6. 라이트닝 토크 & 클로징 (16:30 ~ 17:00): 5A와 5C 인원 전체가 5C로 재집결
+                else if (session.id === 'closing') {
+                    p.setDestination('room5C', forceInstant);
+                }
+                // 7. 컨퍼런스 디너 (17:00 이후): 5C에서 나와 복도를 거쳐 엘리베이터/계단 외부로 이동
+                else if (session.id === 'dinner') {
+                    const elapsed = mins - session.startMin;
+                    if (elapsed < (idx / TOTAL_ATTENDEES) * 18 && !forceInstant) {
+                        p.setDestination('room5C', forceInstant);
+                    } else {
+                        p.setDestination('outside', forceInstant);
+                    }
+                }
+            });
+        }
+
+        /**
+         * ============================================================================
+         * 5. HTML5 Canvas 2D 평면도 및 파티클 렌더링
+         * ============================================================================
+         */
+        const canvas = document.getElementById('floorCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('canvasContainer');
+
+        function resizeCanvas() {
+            const rect = container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 둥근 사각형 헬퍼
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        // 빗금 패턴 생성 (미사용 구역용)
+        function createHatchPattern() {
+            const pCanvas = document.createElement('canvas');
+            pCanvas.width = 12;
+            pCanvas.height = 12;
+            const pCtx = pCanvas.getContext('2d');
+            pCtx.strokeStyle = '#cbd5e1';
+            pCtx.lineWidth = 1.5;
+            pCtx.beginPath();
+            pCtx.moveTo(0, 12);
+            pCtx.lineTo(12, 0);
+            pCtx.stroke();
+            return ctx.createPattern(pCanvas, 'repeat');
+        }
+        const hatchPattern = createHatchPattern();
+
+        function drawFloorPlan(W, H, session) {
+            ctx.clearRect(0, 0, W, H);
+
+            // 배경 외벽
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            roundRect(ctx, W * 0.03, H * 0.03, W * 0.94, H * 0.94, 12);
+            ctx.stroke();
+
+            // 중앙 복도 및 화장실 연결 통로 가이드라인
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.setLineDash([4, 4]);
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            // 세로 메인 복도
+            ctx.moveTo(W * 0.48, H * 0.12);
+            ctx.lineTo(W * 0.48, H * 0.88);
+            // 서쪽 화장실 연결 복도
+            ctx.moveTo(W * 0.48, H * 0.36);
+            ctx.lineTo(W * 0.19, H * 0.36);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // '현위치' 출입구 마커 (5F 안내도 기반)
+            const entX = W * WAYPOINTS.entrance.x;
+            const entY = H * WAYPOINTS.entrance.y;
+            ctx.fillStyle = '#7e22ce';
+            ctx.beginPath();
+            ctx.arc(entX, entY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#581c87';
+            ctx.font = 'bold 10px "Noto Sans KR", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('현위치(입구)', entX, entY - 9);
+
+            // 각 공간 그리기
+            Object.entries(ZONES).forEach(([key, z]) => {
+                const x = W * z.x;
+                const y = H * z.y;
+                const w = W * z.w;
+                const h = H * z.h;
+
+                // 현재 세션에서 활성화된 방인지 확인
+                let isActiveRoom = false;
+                if (key === 'room5C' && (['checkin', 'opening', 'keynote', 'airflow101', 'sprint_intro', 'closing'].includes(session.id) || (session.isSplitTrack && session.id !== 'break'))) {
+                    isActiveRoom = true;
+                } else if (key === 'room5A' && session.isSplitTrack) {
+                    isActiveRoom = true;
+                } else if (key === 'room5B' && ['lunch', 'break'].includes(session.id)) {
+                    isActiveRoom = true;
+                } else if (key === 'lounge' && ['checkin', 'lunch', 'break'].includes(session.id)) {
+                    isActiveRoom = true;
+                }
+
+                const isRestroomHighlight = z.restroom && ['checkin', 'lunch', 'break'].includes(session.id);
+
+                // 박스 채우기
+                roundRect(ctx, x, y, w, h, 8);
+                if (z.unused) {
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.fill();
+                    ctx.fillStyle = hatchPattern;
+                    ctx.fill();
+                    ctx.strokeStyle = '#cbd5e1';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                } else if (z.restroom || z.core) {
+                    ctx.fillStyle = isRestroomHighlight ? '#e0f2fe' : (z.core ? '#f1f5f9' : '#e2e8f0');
+                    ctx.fill();
+                    ctx.strokeStyle = isRestroomHighlight ? '#0284c7' : '#94a3b8';
+                    ctx.lineWidth = isRestroomHighlight ? 2 : 1.2;
+                    ctx.stroke();
+                } else {
+                    // 주요 행사 공간 (5A, 5B, 5C, Lounge)
+                    ctx.fillStyle = isActiveRoom ? z.bg : '#ffffff';
+                    ctx.fill();
+                    ctx.strokeStyle = isActiveRoom ? z.color : '#cbd5e1';
+                    ctx.lineWidth = isActiveRoom ? 2.5 : 1.5;
+                    ctx.stroke();
+
+                    // 활성화 글로우 테두리
+                    if (isActiveRoom) {
+                        ctx.save();
+                        ctx.strokeStyle = z.color + '33';
+                        ctx.lineWidth = 6;
+                        roundRect(ctx, x, y, w, h, 8);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+
+                // 출입문(Door) 표시 (복도와 연결되는 틈)
+                ctx.fillStyle = '#f8fafc';
+                if (key === 'room5A') ctx.fillRect(x - 2, H * WAYPOINTS.door5A.y - 12, 5, 24);
+                if (key === 'room5B') ctx.fillRect(x - 2, H * WAYPOINTS.door5B.y - 12, 5, 24);
+                if (key === 'room5C') ctx.fillRect(x - 2, H * WAYPOINTS.door5C.y - 12, 5, 24);
+                if (key === 'lounge') ctx.fillRect(x + w - 3, H * WAYPOINTS.doorLounge.y - 12, 5, 24);
+                if (key === 'womenRestroom') ctx.fillRect(x + w - 3, H * WAYPOINTS.doorWomen.y - 10, 5, 20);
+                if (key === 'menRestroom') ctx.fillRect(x + w - 3, H * WAYPOINTS.doorMen.y - 10, 5, 20);
+
+                // 텍스트 라벨
+                ctx.textAlign = 'center';
+                if (z.unused || z.restroom || z.core) {
+                    ctx.fillStyle = isRestroomHighlight ? '#0369a1' : '#64748b';
+                    ctx.font = 'bold 11px "Noto Sans KR", sans-serif';
+                    ctx.fillText(z.label, x + w / 2, y + h / 2 - (z.sub ? 4 : -4));
+                    if (z.sub) {
+                        ctx.font = '10px "Noto Sans KR", sans-serif';
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.fillText(z.sub, x + w / 2, y + h / 2 + 10);
+                    }
+                } else {
+                    // 주요 룸 헤더 배지 및 타이틀
+                    const titleY = y + 22;
+                    ctx.fillStyle = isActiveRoom ? z.color : '#334155';
+                    ctx.font = 'bold 13px "Noto Sans KR", sans-serif';
+
+                    // 시간대별 동적 서브 라벨 표시
+                    let dynamicLabel = z.label;
+                    let dynamicSub = z.sub;
+                    if (key === 'room5A') {
+                        dynamicLabel = session.isSplitTrack ? '5A · 스프린트 ( 진행 중 )' : '5A · 스프린트 룸';
+                        dynamicSub = session.isSplitTrack ? 'Airflow & Magpie 첫 PR 스프린트' : '오후 스프린트 등 진행 공간';
+                    } else if (key === 'room5B') {
+                        if (session.id === 'lunch') {
+                            dynamicLabel = '5B · 점심 식사 (Lunch)';
+                            dynamicSub = '케이터링 식사 진행 중';
+                        } else {
+                            dynamicLabel = '5B · 점심 식사 / 휴식';
+                            dynamicSub = '점심 식사(12:20~13:20) 및 다과 공간';
+                        }
+                    } else if (key === 'room5C') {
+                        if (['opening', 'keynote', 'airflow101', 'sprint_intro'].includes(session.id)) {
+                            dynamicLabel = '5C · 오전 통합 세션 (진행 중)';
+                            dynamicSub = '오전 전 프로그램 통합 진행';
+                        } else if (session.isSplitTrack && session.id !== 'break') {
+                            dynamicLabel = '5C · 오후 발표 세션 (진행 중)';
+                            dynamicSub = '오후 정규 발표 세션 (세션 2~6)';
+                        } else if (session.id === 'closing') {
+                            dynamicLabel = '5C · 통합 클로징 & 라이트닝 토크';
+                            dynamicSub = '전원 재집결 · 스프린트 결과 공유';
+                        } else {
+                            dynamicLabel = '5C · 메인 발표 홀';
+                            dynamicSub = '오전 통합 세션 · 오후 발표 · 클로징';
+                        }
+                    }
+
+                    ctx.fillText(dynamicLabel, x + w / 2, titleY);
+
+                    ctx.fillStyle = isActiveRoom ? '#475569' : '#94a3b8';
+                    ctx.font = '10.5px "Noto Sans KR", sans-serif';
+                    ctx.fillText(dynamicSub, x + w / 2, titleY + 15);
+
+                    // 무대/스크린 표시 (5A, 5B, 5C 상단)
+                    if (['room5A', 'room5B', 'room5C'].includes(key)) {
+                        ctx.fillStyle = isActiveRoom ? z.color + '22' : '#e2e8f0';
+                        roundRect(ctx, x + w * 0.25, y + 44, w * 0.5, 6, 3);
+                        ctx.fill();
+                    }
+                }
+            });
+        }
+
+        function drawAttendees(W, H) {
+            attendees.forEach(p => {
+                const px = W * p.x;
+                const py = H * p.y;
+
+                // 이동 중일 때 잔상(트레일) 효과
+                if (p.pathQueue.length > 0) {
+                    ctx.beginPath();
+                    ctx.arc(px, py, p.radius + 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color + '28';
+                    ctx.fill();
+                }
+
+                // 참가자 점(Dot) 본체
+                ctx.beginPath();
+                ctx.arc(px, py, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+                ctx.lineWidth = 1.2;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+            });
+        }
+
+        /**
+         * ============================================================================
+         * 6. UI 동기화 및 인터랙션 컨트롤
+         * ============================================================================
+         */
+        function formatMinutesToHHMM(totalMins) {
+            const h = Math.floor(totalMins / 60);
+            const m = Math.floor(totalMins % 60);
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function renderTimetableUI() {
+            const listEl = document.getElementById('timetableList');
+            listEl.innerHTML = SCHEDULE.map(item => `
+        <button data-start="${item.startMin}" id="tt-item-${item.id}"
+          class="tt-btn w-full text-left p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all flex flex-col gap-1 cursor-pointer">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-mono text-xs font-bold text-slate-600">${item.timeText}</span>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${item.isSplitTrack
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-indigo-100 text-indigo-700'
+                }">
+              ${item.phase}
+            </span>
+          </div>
+          <div class="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
+            ${item.title}
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-1 text-[11px] text-slate-500 mt-0.5">
+            <span class="font-medium text-purple-700">📍 ${item.roomLabel}</span>
+            <span>${item.speaker}</span>
+          </div>
+        </button>
+      `).join('');
+
+            // 타임테이블 클릭 이벤트
+            document.querySelectorAll('.tt-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetMin = parseFloat(btn.getAttribute('data-start'));
+                    currentMinutes = targetMin;
+                    document.getElementById('timeSlider').value = Math.floor(currentMinutes);
+                    assignDestinationsForTime(currentMinutes, false);
+                    updateDashboardInfo();
+                });
+            });
+        }
+
+        function updateDashboardInfo() {
+            const session = getSessionAt(currentMinutes);
+            document.getElementById('clockDisplay').textContent = formatMinutesToHHMM(currentMinutes);
+            document.getElementById('timeSlider').value = Math.floor(currentMinutes);
+
+            if (activeSessionId !== session.id) {
+                activeSessionId = session.id;
+
+                // 상단 배너 업데이트
+                document.getElementById('phaseBadge').textContent = session.phase;
+                document.getElementById('timeRangeBadge').textContent = session.timeText;
+                document.getElementById('currentSessionTitle').textContent = session.title;
+                document.getElementById('currentSessionDesc').textContent = session.desc;
+
+                // 우측 타임테이블 하이라이트
+                document.querySelectorAll('.tt-btn').forEach(el => {
+                    el.classList.remove('ring-2', 'ring-purple-600', 'bg-purple-50/60', 'border-purple-300');
+                });
+                const activeEl = document.getElementById(`tt-item-${session.id}`);
+                if (activeEl) {
+                    activeEl.classList.add('ring-2', 'ring-purple-600', 'bg-purple-50/60', 'border-purple-300');
+                    activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+
+        // 컨트롤 버튼 이벤트 바인딩
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        playPauseBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            document.getElementById('pauseIcon').classList.toggle('hidden', !isPlaying);
+            document.getElementById('playIcon').classList.toggle('hidden', isPlaying);
+            document.getElementById('playPauseText').textContent = isPlaying ? '일시정지' : '재생';
+            document.getElementById('liveIndicator').classList.toggle('bg-emerald-400', isPlaying);
+            document.getElementById('liveIndicator').classList.toggle('bg-slate-400', !isPlaying);
+        });
+
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                playbackSpeed = parseFloat(btn.getAttribute('data-speed'));
+                document.querySelectorAll('.speed-btn').forEach(b => {
+                    b.className = 'speed-btn px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer';
+                });
+                btn.className = 'speed-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-white text-purple-700 shadow-sm cursor-pointer';
+            });
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            currentMinutes = 600;
+            attendees.forEach(p => {
+                p.x = WAYPOINTS.exitElevator.x + (Math.random() - 0.5) * 0.04;
+                p.y = WAYPOINTS.exitElevator.y + (Math.random() - 0.5) * 0.04;
+                p.pathQueue = [];
+            });
+            assignDestinationsForTime(currentMinutes, false);
+            updateDashboardInfo();
+        });
+
+        document.getElementById('timeSlider').addEventListener('input', (e) => {
+            currentMinutes = parseFloat(e.target.value);
+            assignDestinationsForTime(currentMinutes, false);
+            updateDashboardInfo();
+        });
+
+        /**
+         * ============================================================================
+         * 7. 메인 애니메이션 루프
+         * ============================================================================
+         */
+        function animate(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const dt = timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
+
+            if (isPlaying) {
+                // 1초당 기본 2.5분 경과 * 배속
+                currentMinutes += (dt / 1000) * 2.5 * playbackSpeed;
+                if (currentMinutes >= 1110) {
+                    currentMinutes = 600; // 18:30 도달 시 10:00으로 순환
+                    attendees.forEach(p => {
+                        p.x = WAYPOINTS.exitElevator.x;
+                        p.y = WAYPOINTS.exitElevator.y;
+                    });
+                }
+                assignDestinationsForTime(currentMinutes, false);
+                updateDashboardInfo();
+            }
+
+            const rect = container.getBoundingClientRect();
+            const session = getSessionAt(currentMinutes);
+
+            attendees.forEach(p => p.update(dt, playbackSpeed));
+            drawFloorPlan(rect.width, rect.height, session);
+            drawAttendees(rect.width, rect.height);
+
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = function () {
+            renderTimetableUI();
+            assignDestinationsForTime(600, false);
+            updateDashboardInfo();
+            requestAnimationFrame(animate);
+        };
+    </script>
+</body>
+
+</html>
