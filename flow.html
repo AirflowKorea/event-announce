@@ -46,7 +46,7 @@
             <div class="flex items-center gap-3">
                 <a href="index.html"
                     class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition shrink-0">
-                    ← 메인으로
+                    ← main
                 </a>
                 <div
                     class="w-10 h-10 rounded-xl bg-purple-700 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
@@ -57,7 +57,7 @@
                         Airflow & Magpie Meetup 공간 동선 시뮬레이터
                     </h1>
                     <p class="text-xs text-slate-500">
-                        오전 통합 세션(5C) → 점심 식사(5B) → 오후 2개 트랙(5C 발표 / 5A 스프린트) 동선 시각화
+                        오전 통합 세션(5C) → 점심 식사(5B) → 오후 2개 트랙(5A 발표 세션 / 5C 스프린트) 동선 시각화
                     </p>
                 </div>
             </div>
@@ -156,11 +156,11 @@
                     <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600">
                         <span class="flex items-center gap-1">
                             <span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>
-                            일반 발표 참가자 (5C)
+                            일반 발표 참가자 (오후 5A)
                         </span>
                         <span class="flex items-center gap-1">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-                            스프린트 참가자 (5A)
+                            스프린트 참가자 (오후 5C)
                         </span>
                         <span class="flex items-center gap-1">
                             <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
@@ -266,7 +266,7 @@
                 title: '스프린트 안내 & 단체사진',
                 roomLabel: '5C (오전 통합 진행)',
                 speaker: 'Jarek Potiuk, 추영욱',
-                desc: '오후 5A에서 진행될 스프린트 안내 및 전체 참가자 5C 단체사진 촬영',
+                desc: '오후 5C에서 진행될 스프린트 안내 및 전체 참가자 단체사진 촬영',
                 isSplitTrack: false
             },
             {
@@ -286,11 +286,11 @@
                 startMin: 800, // 13:20
                 endMin: 835,   // 13:55
                 timeText: '13:20 - 13:55',
-                phase: '오후 2트랙 (5C/5A)',
-                title: '[5C 발표] 혼자 개발하는 서비스, Airflow와 함께 살아남기 / [5A 스프린트] 시작',
-                roomLabel: '5C (발표 세션) | 5A (스프린트)',
-                speaker: '이선엽 (5C) / Jarek Potiuk, 추영욱 (5A)',
-                desc: '오후에는 5C와 5A로 나뉘어 진행합니다! 발표 청중은 5C로, 스프린트 참가자는 5A로 이동합니다.',
+                phase: '오후 2트랙 (5A/5C)',
+                title: '[5A 세션] 혼자 개발하는 서비스, Airflow와 함께 살아남기 / [5C 스프린트] 시작',
+                roomLabel: '5A (발표 세션) | 5C (스프린트)',
+                speaker: '이선엽 (5A) / Jarek Potiuk, 추영욱 (5C)',
+                desc: '오후에는 5A와 5C로 나뉘어 진행합니다! 발표 청중은 5A(세션 룸)로, 스프린트 참가자는 5C(워크샵 룸)로 이동합니다.',
                 isSplitTrack: true
             },
             {
@@ -298,11 +298,11 @@
                 startMin: 835, // 13:55
                 endMin: 870,   // 14:30
                 timeText: '13:55 - 14:30',
-                phase: '오후 2트랙 (5C/5A)',
-                title: '[5C 발표] PyCon TW 원정기 / [5A 스프린트] 진행 중',
-                roomLabel: '5C (발표 세션) | 5A (스프린트)',
-                speaker: '운영진 (5C) / Jarek Potiuk, 추영욱 (5A)',
-                desc: '5C에서는 해외 컨퍼런스 후기 발표가, 5A에서는 Apache Airflow & Magpie 첫 PR 스프린트가 이어집니다.',
+                phase: '오후 2트랙 (5A/5C)',
+                title: '[5A 세션] PyCon TW 원정기 / [5C 스프린트] 진행 중',
+                roomLabel: '5A (발표 세션) | 5C (스프린트)',
+                speaker: '운영진 (5A) / Jarek Potiuk, 추영욱 (5C)',
+                desc: '5A에서는 해외 컨퍼런스 후기 발표가, 5C에서는 Apache Airflow & Magpie 첫 PR 스프린트가 이어집니다.',
                 isSplitTrack: true
             },
             {
@@ -310,11 +310,11 @@
                 startMin: 870, // 14:30
                 endMin: 905,   // 15:05
                 timeText: '14:30 - 15:05',
-                phase: '오후 2트랙 (5C/5A)',
-                title: '[5C 발표] 2.x에서 3.x로 이행하면서 알게 된 베스트 프랙티스 / [5A 스프린트]',
-                roomLabel: '5C (발표 세션) | 5A (스프린트)',
-                speaker: '한상곤 (5C) / Jarek Potiuk, 추영욱 (5A)',
-                desc: 'Airflow 3.x 마이그레이션 실전 경험 발표(5C) 및 스프린트 핸즈온(5A) 병행 진행',
+                phase: '오후 2트랙 (5A/5C)',
+                title: '[5A 세션] 2.x에서 3.x로 이행하면서 알게 된 베스트 프랙티스 / [5C 스프린트]',
+                roomLabel: '5A (발표 세션) | 5C (스프린트)',
+                speaker: '한상곤 (5A) / Jarek Potiuk, 추영욱 (5C)',
+                desc: 'Airflow 3.x 마이그레이션 실전 경험 발표(5A) 및 스프린트 핸즈온(5C) 병행 진행',
                 isSplitTrack: true
             },
             {
@@ -326,7 +326,7 @@
                 title: '오후 휴식 시간 (Break & 네트워킹)',
                 roomLabel: '미니 라운지 · 5B · 남/여 화장실',
                 speaker: '자유 휴식',
-                desc: '5C와 5A 참가자들이 중앙 복도를 통해 미니 라운지와 남/여 화장실로 이동하여 리프레시합니다.',
+                desc: '5A와 5C 참가자들이 중앙 복도를 통해 미니 라운지와 남/여 화장실로 이동하여 리프레시합니다.',
                 isSplitTrack: true
             },
             {
@@ -334,11 +334,11 @@
                 startMin: 920, // 15:20
                 endMin: 955,   // 15:55
                 timeText: '15:20 - 15:55',
-                phase: '오후 2트랙 (5C/5A)',
-                title: '[5C 발표] Spark 없이 CDC MERGE 하기 / [5A 스프린트] 마무리 단계',
-                roomLabel: '5C (발표 세션) | 5A (스프린트)',
-                speaker: '김태연 (5C) / Jarek Potiuk, 추영욱 (5A)',
-                desc: '휴식 후 다시 5C(발표 세션)와 5A(스프린트)로 복귀하여 오후 후반부 세션을 이어갑니다.',
+                phase: '오후 2트랙 (5A/5C)',
+                title: '[5A 세션] Spark 없이 CDC MERGE 하기 / [5C 스프린트] 마무리 단계',
+                roomLabel: '5A (발표 세션) | 5C (스프린트)',
+                speaker: '김태연 (5A) / Jarek Potiuk, 추영욱 (5C)',
+                desc: '휴식 후 다시 5A(발표 세션)와 5C(스프린트)로 복귀하여 오후 후반부 세션을 이어갑니다.',
                 isSplitTrack: true
             },
             {
@@ -346,11 +346,11 @@
                 startMin: 955, // 15:55
                 endMin: 990,   // 16:30
                 timeText: '15:55 - 16:30',
-                phase: '오후 2트랙 (5C/5A)',
-                title: '[5C 발표] Airflow에 LLM 붙이기 / [5A 스프린트] PR 정리',
-                roomLabel: '5C (발표 세션) | 5A (스프린트)',
-                speaker: '남상균 (5C) / Jarek Potiuk, 추영욱 (5A)',
-                desc: '상품 카탈로그 보강 파이프라인 사례 발표(5C) 및 스프린트 결과 정리(5A)',
+                phase: '오후 2트랙 (5A/5C)',
+                title: '[5A 세션] Airflow에 LLM 붙이기 / [5C 스프린트] PR 정리',
+                roomLabel: '5A (발표 세션) | 5C (스프린트)',
+                speaker: '남상균 (5A) / Jarek Potiuk, 추영욱 (5C)',
+                desc: '상품 카탈로그 보강 파이프라인 사례 발표(5A) 및 스프린트 결과 정리(5C)',
                 isSplitTrack: true
             },
             {
@@ -362,7 +362,7 @@
                 title: '라이트닝 토크 & 클로징 (스프린트 결과 공유 포함)',
                 roomLabel: '5C (전체 재집결)',
                 speaker: '운영진 & 스프린트 참가자',
-                desc: '5A에 있던 스프린트 참가자 전원이 5C로 이동하여 합류하고, 라이트닝 토크와 스프린트 성과를 공유합니다.',
+                desc: '5A에 있던 발표 세션 청중 전원이 5C로 이동하여 합류하고, 라이트닝 토크와 스프린트 성과를 공유합니다.',
                 isSplitTrack: false
             },
             {
@@ -386,9 +386,9 @@
          */
         const ZONES = {
             // 우측 3개 메인 공간
-            room5A: { x: 0.53, y: 0.05, w: 0.42, h: 0.28, label: '5A 스프린트 (Track 2)', sub: '오후 스프린트 핸즈온 룸', color: '#047857', bg: '#ecfdf5' },
-            room5B: { x: 0.53, y: 0.35, w: 0.42, h: 0.27, label: '5B 점심 식사', sub: '식사 및 휴식 (Lunch & Dining)', color: '#6d28d9', bg: '#f3e8ff' },
-            room5C: { x: 0.53, y: 0.64, w: 0.42, h: 0.31, label: '5C 발표 세션 (Track 1)', sub: '오전 전체 진행 · 오후 발표 · 클로징', color: '#4338ca', bg: '#eef2ff' },
+            room5A: { x: 0.53, y: 0.05, w: 0.42, h: 0.28, label: '5A 세션 (오후 발표)', sub: '오후 정규 발표 세션 (Track 1)', color: '#6b21a8', bg: '#f3e8ff' },
+            room5B: { x: 0.53, y: 0.35, w: 0.42, h: 0.27, label: '5B 점심 식사', sub: '식사 및 휴식 (Lunch & Dining)', color: '#0369a1', bg: '#e0f2fe' },
+            room5C: { x: 0.53, y: 0.64, w: 0.42, h: 0.31, label: '5C 워크샵 (오전통합·오후스프린트)', sub: '오전 전체 진행 · 오후 스프린트 · 클로징', color: '#047857', bg: '#ecfdf5' },
 
             // 좌측 공간들
             studioUnused: { x: 0.05, y: 0.05, w: 0.38, h: 0.14, label: '스튜디오 1·2 / 창고', sub: '사용 안 함 (출입 제한)', unused: true },
@@ -641,18 +641,18 @@
                         p.setDestination('room5B', forceInstant);
                     }
                 }
-                // 4. 오후 2개 트랙 세션 (13:20~15:05, 15:20~16:30): 발표는 5C, 스프린트는 5A!
+                // 4. 오후 2개 트랙 세션 (13:20~15:05, 15:20~16:30): 발표 세션은 5A, 스프린트는 5C!
                 else if (['pm_session1', 'pm_session2', 'pm_session3', 'pm_session4', 'pm_session5'].includes(session.id)) {
                     if (p.role === 'sprint') {
-                        p.setDestination('room5A', forceInstant); // 스프린트 트랙: 5A
+                        p.setDestination('room5C', forceInstant); // 스프린트 트랙: 5C
                     } else if (p.role === 'staff') {
-                        // 운영진/연사는 5C(발표)와 5A(스프린트)에 분담 배치
-                        p.setDestination(idx % 2 === 0 ? 'room5C' : 'room5A', forceInstant);
+                        // 운영진/연사는 5A(발표)와 5C(스프린트)에 분담 배치
+                        p.setDestination(idx % 2 === 0 ? 'room5A' : 'room5C', forceInstant);
                     } else {
-                        // 일반 참가자: 대다수는 5C 발표 세션, 일부는 5A 스프린트 합류 또는 라운지
-                        if (idx % 11 === 0) p.setDestination('room5A', forceInstant);
+                        // 일반 참가자: 대다수는 5A 발표 세션, 일부는 5C 스프린트 합류 또는 라운지
+                        if (idx % 11 === 0) p.setDestination('room5C', forceInstant);
                         else if (idx % 19 === 0) p.setDestination('lounge', forceInstant);
-                        else p.setDestination('room5C', forceInstant); // 발표 트랙: 5C
+                        else p.setDestination('room5A', forceInstant); // 발표 트랙: 5A
                     }
                 }
                 // 5. 오후 휴식 시간 (15:05 ~ 15:20): 미니 라운지, 5B 및 남/여 화장실 골고루 이동
@@ -661,8 +661,8 @@
                         // idx = 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70 (짝수 8명 여자화장실, 홀수 7명 남자화장실)
                         p.setDestination(restroomTarget, forceInstant);
                     } else if (p.role === 'sprint' && idx % 2 === 0) {
-                        // 스프린트 참가자 일부는 5A 잔류
-                        p.setDestination('room5A', forceInstant);
+                        // 스프린트 참가자 일부는 5C 잔류
+                        p.setDestination('room5C', forceInstant);
                     } else if (idx % 3 === 0) {
                         p.setDestination('room5B', forceInstant);
                     } else {
@@ -778,9 +778,9 @@
 
                 // 현재 세션에서 활성화된 방인지 확인
                 let isActiveRoom = false;
-                if (key === 'room5C' && (['checkin', 'opening', 'keynote', 'airflow101', 'sprint_intro', 'closing'].includes(session.id) || (session.isSplitTrack && session.id !== 'break'))) {
+                if (key === 'room5C' && (['checkin', 'opening', 'keynote', 'airflow101', 'sprint_intro', 'closing'].includes(session.id) || session.isSplitTrack)) {
                     isActiveRoom = true;
-                } else if (key === 'room5A' && session.isSplitTrack) {
+                } else if (key === 'room5A' && (session.isSplitTrack && session.id !== 'break')) {
                     isActiveRoom = true;
                 } else if (key === 'room5B' && ['lunch', 'break'].includes(session.id)) {
                     isActiveRoom = true;
@@ -855,8 +855,8 @@
                     let dynamicLabel = z.label;
                     let dynamicSub = z.sub;
                     if (key === 'room5A') {
-                        dynamicLabel = session.isSplitTrack ? '5A · 스프린트 ( 진행 중 )' : '5A · 스프린트 룸';
-                        dynamicSub = session.isSplitTrack ? 'Airflow & Magpie 첫 PR 스프린트' : '오후 스프린트 등 진행 공간';
+                        dynamicLabel = (session.isSplitTrack && session.id !== 'break') ? '5A · 오후 발표 세션 (진행 중)' : '5A · 세션 룸';
+                        dynamicSub = (session.isSplitTrack && session.id !== 'break') ? '오후 정규 발표 세션 (세션 2~6)' : '오후 정규 발표 세션 공간';
                     } else if (key === 'room5B') {
                         if (session.id === 'lunch') {
                             dynamicLabel = '5B · 점심 식사 (Lunch)';
@@ -869,15 +869,15 @@
                         if (['opening', 'keynote', 'airflow101', 'sprint_intro'].includes(session.id)) {
                             dynamicLabel = '5C · 오전 통합 세션 (진행 중)';
                             dynamicSub = '오전 전 프로그램 통합 진행';
-                        } else if (session.isSplitTrack && session.id !== 'break') {
-                            dynamicLabel = '5C · 오후 발표 세션 (진행 중)';
-                            dynamicSub = '오후 정규 발표 세션 (세션 2~6)';
+                        } else if (session.isSplitTrack) {
+                            dynamicLabel = '5C · 오후 스프린트 (진행 중)';
+                            dynamicSub = 'Airflow & Magpie 첫 PR 스프린트';
                         } else if (session.id === 'closing') {
                             dynamicLabel = '5C · 통합 클로징 & 라이트닝 토크';
                             dynamicSub = '전원 재집결 · 스프린트 결과 공유';
                         } else {
-                            dynamicLabel = '5C · 메인 발표 홀';
-                            dynamicSub = '오전 통합 세션 · 오후 발표 · 클로징';
+                            dynamicLabel = '5C · 워크샵 / 통합 홀';
+                            dynamicSub = '오전 통합 세션 · 오후 스프린트 · 클로징';
                         }
                     }
 
